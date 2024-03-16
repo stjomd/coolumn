@@ -1,10 +1,8 @@
-use clap::Parser;
-
 mod args;
 mod io;
 
 fn main() {
-    let args = args::Arguments::parse();
+    let args = args::argv();
 
     if args.files.len() > 0 {
         for file in args.files.iter() {

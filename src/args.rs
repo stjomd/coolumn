@@ -6,3 +6,7 @@ pub struct Arguments {
     #[arg(help = "The files to read from. If none are specified, input is read from stdin.")]
     pub files: Vec<std::path::PathBuf>
 }
+
+pub fn argv() -> Arguments {
+    Arguments::parse()
+}
