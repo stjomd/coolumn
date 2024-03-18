@@ -1,16 +1,27 @@
 pub mod stdin;
-pub use crate::supply::stdin::StdinInput;
+pub mod file;
 
-pub trait LineSupplier {
-    fn get_line(&mut self) -> Option<&String>;
+use std::io::Error;
+pub use crate::supply::stdin::StdinInput;
+pub use crate::supply::file::FileInput;
+
+pub enum ReadResult<'a> {
+    Line(&'a String),   // a line with contents
+    EOF,                // EOF, lines might come up next
+    Finished            // processed everything, no more lines
 }
 
-pub fn process<T: LineSupplier>(supplier: &mut T) {
+pub trait LineSupplier {
+    fn get_line(&mut self) -> Result<ReadResult, Error>;
+}
+
+pub fn process<T: LineSupplier>(supplier: &mut T) -> Result<(), Error> {
     loop {
-        let line = supplier.get_line();
-        match line {
-            Some(line) => println!("{}", line),
-            None => break
+        match supplier.get_line()? {
+            ReadResult::Line(line) => println!("{}", line.trim_end()),
+            ReadResult::EOF => {}
+            ReadResult::Finished => break
         }
     }
+    Ok(())
 }
