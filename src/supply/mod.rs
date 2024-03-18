@@ -15,6 +15,12 @@ pub trait LineSupplier {
     fn get_line(&mut self) -> Result<ReadResult, Error>;
 }
 
+impl LineSupplier for Box<dyn LineSupplier> {
+    fn get_line(&mut self) -> Result<ReadResult, Error> {
+        (**self).get_line()
+    }
+}
+
 pub fn process<T: LineSupplier>(supplier: &mut T) -> Result<(), Error> {
     loop {
         match supplier.get_line()? {
