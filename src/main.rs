@@ -1,10 +1,11 @@
 mod args;
 mod io;
+mod supply;
 
 fn main() {
     let args = args::argv();
 
-    if args.files.len() > 0 {
+    if !args.files.is_empty() {
         for file in args.files.iter() {
             let result = io::read_file(file);
             match result {
@@ -13,8 +14,8 @@ fn main() {
             }
         }
     } else {
-        let lines = io::read_stdin();
-        lines.iter().for_each(|line| println!("{}", line))
+        let mut supplier = supply::StdinInput::new();
+        supply::process(&mut supplier);
     }
 
 }
