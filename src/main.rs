@@ -1,7 +1,7 @@
-use crate::supply::LineSupplier;
-
 mod args;
 mod supply;
+
+use crate::supply::*;
 
 fn main() {
 
@@ -9,10 +9,11 @@ fn main() {
 
     let mut supplier: Box<dyn LineSupplier>;
     if !args.files.is_empty() {
-        supplier = Box::new(supply::FileInput::new(args.files));
+        supplier = Box::new(FileInput::new(args.files));
     } else {
-        supplier = Box::new(supply::StdinInput::new());
+        supplier = Box::new(StdinInput::new());
     }
-    supply::process(&mut supplier).expect("Couldn't process");
+
+    process(&mut supplier).expect("Couldn't process");
 
 }
