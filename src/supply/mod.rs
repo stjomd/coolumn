@@ -6,7 +6,7 @@ pub use crate::supply::stdin::StdinInput;
 pub use crate::supply::file::FileInput;
 
 pub enum ReadResult<'a> {
-    Line(&'a String),   // a line with contents
+    Line(&'a str),      // a line with contents
     EOF,                // EOF, lines might come up next
     Finished            // processed everything, no more lines
 }
