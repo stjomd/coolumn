@@ -13,21 +13,20 @@ pub enum ReadResult<'a> {
 
 pub trait LineSupplier {
     fn get_line(&mut self) -> Result<ReadResult, Error>;
+    fn for_each(&mut self, operation: fn(&str) -> ()) -> Result<(), Error> {
+        loop {
+            match self.get_line()? {
+                ReadResult::Line(line) => operation(line.trim_end()),
+                ReadResult::EOF => continue,
+                ReadResult::Finished => break
+            }
+        }
+        Ok(())
+    }
 }
 
 impl LineSupplier for Box<dyn LineSupplier> {
     fn get_line(&mut self) -> Result<ReadResult, Error> {
         (**self).get_line()
     }
-}
-
-pub fn process<T: LineSupplier>(supplier: &mut T) -> Result<(), Error> {
-    loop {
-        match supplier.get_line()? {
-            ReadResult::Line(line) => println!("{}", line.trim_end()),
-            ReadResult::EOF => {}
-            ReadResult::Finished => break
-        }
-    }
-    Ok(())
 }

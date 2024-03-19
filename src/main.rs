@@ -1,7 +1,7 @@
 mod args;
 mod supply;
 
-use crate::supply::*;
+use crate::supply::{LineSupplier, FileInput, StdinInput};
 
 fn main() {
 
@@ -14,6 +14,8 @@ fn main() {
         supplier = Box::new(StdinInput::new());
     }
 
-    process(&mut supplier).expect("Couldn't process");
+    supplier
+        .for_each(|line| println!("{line}"))
+        .expect("Couldn't process");
 
 }
