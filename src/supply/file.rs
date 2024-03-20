@@ -2,8 +2,8 @@ use std::fs::File;
 use std::io::{BufReader, BufRead};
 use std::path::PathBuf;
 use crate::errors::Error;
-use crate::supply::{LineSupplier, ReadResult};
-use crate::supply::ReadResult::*;
+use crate::supply::{LineSupplier, Progress};
+use crate::supply::Progress::*;
 
 pub struct FileInput {
     paths: Vec<PathBuf>,
@@ -35,7 +35,7 @@ impl FileInput {
 }
 
 impl LineSupplier for FileInput {
-    fn get_line(&mut self) -> Result<ReadResult, Error> {
+    fn get_line(&mut self) -> Result<Progress, Error> {
         if let None = self.reader {
             self.open_next_file()?
         }
