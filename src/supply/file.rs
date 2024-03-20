@@ -1,6 +1,7 @@
 use std::fs::File;
-use std::io::{BufReader, BufRead, Error};
+use std::io::{BufReader, BufRead};
 use std::path::PathBuf;
+use crate::errors::Error;
 use crate::supply::{LineSupplier, ReadResult};
 use crate::supply::ReadResult::*;
 
@@ -16,8 +17,11 @@ impl FileInput {
         Self { paths, reader: None, line: "".to_string(), counter: 0 }
     }
     fn open(path: &PathBuf) -> Result<BufReader<File>, Error> {
-        let file = File::open(path)?;
-        Ok(BufReader::new(file))
+        let file = File::open(path);
+        match file {
+            Ok(file) => Ok(BufReader::new(file)),
+            Err(error) => Err(Error::IO(path.display().to_string(), error))
+        }
     }
     fn open_next_file(&mut self) -> Result<(), Error> {
         self.reader = None;
@@ -32,16 +36,16 @@ impl FileInput {
 
 impl LineSupplier for FileInput {
     fn get_line(&mut self) -> Result<ReadResult, Error> {
-        match self.reader {
-            None => self.open_next_file()?,
-            Some(_) => {}
+        if let None = self.reader {
+            self.open_next_file()?
         }
         if let Some(ref mut reader) = self.reader {
             self.line.clear();
-            return match reader.read_line(&mut self.line)? {
-                0 => { self.open_next_file()?; Ok(EOF) },
-                _ => Ok(Line(&self.line))
-            }
+            return match reader.read_line(&mut self.line) {
+                Ok(0) => { self.open_next_file()?; Ok(EOF) },
+                Ok(_) => Ok(Line(&self.line)),
+                Err(error) => Err(Error::IO(self.paths[self.counter].display().to_string(), error))
+            };
         }
         Ok(Finished)
     }

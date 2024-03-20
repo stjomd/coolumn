@@ -1,9 +1,11 @@
 mod args;
 mod supply;
+mod errors;
 
+use crate::errors::EndResult;
 use crate::supply::{LineSupplier, FileInput, StdinInput};
 
-fn main() {
+fn main() -> EndResult {
 
     let args = args::argv();
 
@@ -14,8 +16,7 @@ fn main() {
         supplier = Box::new(StdinInput::new());
     }
 
-    supplier
-        .for_each(|line| println!("{line}"))
-        .expect("Couldn't process");
+    let result = supplier.for_each(|line| println!("{line}"));
+    EndResult(result)
 
 }

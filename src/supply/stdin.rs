@@ -1,4 +1,5 @@
-use std::io::{BufRead, Error, stdin};
+use std::io::{BufRead, stdin};
+use crate::errors::Error;
 use crate::supply::{LineSupplier, ReadResult};
 
 pub struct StdinInput {

@@ -1,7 +1,7 @@
 pub mod stdin;
 pub mod file;
 
-use std::io::Error;
+use crate::errors::Error;
 pub use crate::supply::stdin::StdinInput;
 pub use crate::supply::file::FileInput;
 
