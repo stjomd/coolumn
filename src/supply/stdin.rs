@@ -25,8 +25,8 @@ impl LineSupplier for StdinInput {
         }
         self.index += 1;
         match self.lines.get(self.index - 1) {
-            Some(line) => Ok(Progress::Line(line.clone())),
-            None => Ok(Progress::Finished)
+            Some(line) => Ok(Progress::Line(line)),
+            None => Ok(Progress::Done)
         }
     }
 }
