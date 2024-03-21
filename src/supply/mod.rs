@@ -9,6 +9,14 @@ pub enum Progress<'a> {
     Line(&'a str),      // a line with contents
     EOF,                // EOF, lines might come up next
     Finished            // processed everything, no more lines
+/// A collection of values to track progress of reading input.
+pub enum Progress {
+    /// Indicates that a read was successful and contains the contents of a line.
+    Line(String),
+    /// Indicates that an EOF was reached when reading from a file.
+    EOF,
+    /// Indicates that all content has been read already.
+    Finished
 }
 
 pub trait LineSupplier {

@@ -43,7 +43,7 @@ impl LineSupplier for FileInput {
             self.line.clear();
             return match reader.read_line(&mut self.line) {
                 Ok(0) => { self.open_next_file()?; Ok(EOF) },
-                Ok(_) => Ok(Line(&self.line)),
+                Ok(_) => Ok(Line(self.line.clone())),
                 Err(error) => Err(Error::IO(self.paths[self.counter].display().to_string(), error))
             };
         }
