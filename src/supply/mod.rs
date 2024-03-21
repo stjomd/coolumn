@@ -5,10 +5,6 @@ use crate::errors::Error;
 pub use crate::supply::stdin::StdinInput;
 pub use crate::supply::file::FileInput;
 
-pub enum Progress<'a> {
-    Line(&'a str),      // a line with contents
-    EOF,                // EOF, lines might come up next
-    Finished            // processed everything, no more lines
 /// A collection of values to track progress of reading input.
 pub enum Progress {
     /// Indicates that a read was successful and contains the contents of a line.
