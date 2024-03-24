@@ -57,6 +57,7 @@ impl FileInput {
 }
 
 impl LineSupplier for FileInput {
+
     fn get_line(&mut self) -> Result<Progress, Error> {
         if let None = self.reader {
             self.open_next_file()?
@@ -71,4 +72,11 @@ impl LineSupplier for FileInput {
         }
         Ok(Done)
     }
+
+    fn reset(&mut self) {
+        self.reader = None;
+        self.line = "".to_string();
+        self.counter = 0;
+    }
+
 }

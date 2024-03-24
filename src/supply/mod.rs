@@ -29,12 +29,11 @@ pub trait LineSupplier {
     /// Returns a line of input.
     /// # Returns
     /// A result containing either a `Progress` value or an `Error`.
-    /// ## Multiple files
-    /// When reading from multiple files, it is possible to get a `Progress::EOF` value. That
-    /// indicates an end of the current file, and a further call to this method can be made to
-    /// retrieve a line from the next file. Once no more lines and files are available,
-    /// `Progress::Done` is returned. The method `get_line_owned` abstracts this away.
     fn get_line(&mut self) -> Result<Progress, Error>;
+
+    /// Resets the state of the supplier.
+    /// After this call, supplier will be able to provide the input contents again.
+    fn reset(&mut self);
 
     // /// Returns a line of input as an owned string.
     // /// This method utilizes `LineSupplier::get_line` and converts string slices to owned strings.
@@ -72,5 +71,8 @@ pub trait LineSupplier {
 impl LineSupplier for Box<dyn LineSupplier> {
     fn get_line(&mut self) -> Result<Progress, Error> {
         (**self).get_line()
+    }
+    fn reset(&mut self) {
+        (**self).reset()
     }
 }
