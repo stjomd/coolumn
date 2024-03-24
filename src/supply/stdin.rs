@@ -69,7 +69,7 @@ mod tests {
         let mut supplier = mock(lines.clone());
         assert_eq!(Line(&lines[0]), supplier.get_line()?, "Result of get_line does not match input");
         assert_eq!(Line(&lines[1]), supplier.get_line()?, "Result of get_line does not match input");
-        assert_eq!(Line(&lines[0]), supplier.get_line()?, "Result of get_line does not match input");
+        assert_eq!(Line(&lines[2]), supplier.get_line()?, "Result of get_line does not match input");
         assert_eq!(Done, supplier.get_line()?, "Result of get_line is not `Done`");
         Ok(())
     }
