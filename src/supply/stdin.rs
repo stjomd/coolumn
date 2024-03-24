@@ -14,7 +14,6 @@ pub struct StdinInput {
 }
 
 impl StdinInput {
-
     /// A constructor for this struct.
     /// # Returns
     /// An instance of this struct.
@@ -29,11 +28,9 @@ impl StdinInput {
             .collect();
         self.loaded = true;
     }
-
 }
 
 impl LineSupplier for StdinInput {
-    
     fn get_line(&mut self) -> Result<Progress, Error> {
         if !self.loaded {
             self.load();
@@ -48,5 +45,51 @@ impl LineSupplier for StdinInput {
     fn reset(&mut self) {
         self.index = 0;
     }
-    
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::supply::Progress::{Done, Line};
+
+    fn mock(lines: Vec<String>) -> StdinInput {
+        let mut supplier = StdinInput::new();
+        supplier.lines = lines;
+        supplier.loaded = true;
+        return supplier;
+    }
+
+    #[test]
+    fn should_return_line_and_done() -> Result<(), Error> {
+        let lines = vec![
+            String::from("line 1"),
+            String::from(""),
+            String::from("line 3"),
+        ];
+        let mut supplier = mock(lines.clone());
+        assert_eq!(Line(&lines[0]), supplier.get_line()?, "Result of get_line does not match input");
+        assert_eq!(Line(&lines[1]), supplier.get_line()?, "Result of get_line does not match input");
+        assert_eq!(Line(&lines[0]), supplier.get_line()?, "Result of get_line does not match input");
+        assert_eq!(Done, supplier.get_line()?, "Result of get_line is not `Done`");
+        Ok(())
+    }
+
+    #[test]
+    fn should_start_from_begin_after_reset() -> Result<(), Error> {
+        let lines = vec![
+            String::from("line 1"),
+            String::from("line 2"),
+        ];
+        let mut supplier = mock(lines.clone());
+        assert_eq!(Line(&lines[0]), supplier.get_line()?, "Result of get_line does not match input");
+        supplier.reset();
+        assert_eq!(Line(&lines[0]), supplier.get_line()?, "Result of get_line after reset is not the first line");
+        assert_eq!(Line(&lines[1]), supplier.get_line()?, "Result of get_line does not match input");
+        assert_eq!(Done, supplier.get_line()?, "Result of get_line is not `Done`");
+        supplier.reset();
+        assert_eq!(Line(&lines[0]), supplier.get_line()?, "Result of get_line after reset is not the first line");
+        assert_eq!(Line(&lines[1]), supplier.get_line()?, "Result of get_line does not match input");
+        assert_eq!(Done, supplier.get_line()?, "Result of get_line is not `Done`");
+        Ok(())
+    }
 }

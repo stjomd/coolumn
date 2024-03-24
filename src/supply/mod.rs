@@ -6,6 +6,7 @@ pub use crate::supply::stdin::StdinInput;
 pub use crate::supply::file::FileInput;
 
 /// A collection of values to track progress of reading input.
+#[derive(Debug, PartialEq)]
 pub enum Progress<'a> {
     /// Indicates that a read was successful and contains the contents of a line.
     Line(&'a str),
