@@ -1,6 +1,7 @@
 mod args;
 mod supply;
 mod errors;
+mod format;
 
 use crate::errors::EndResult;
 use crate::supply::{LineSupplier, FileInput, StdinInput};
@@ -16,7 +17,7 @@ fn main() -> EndResult {
         supplier = Box::new(StdinInput::new());
     }
 
-    let result = supplier.for_each(|line| println!("{line}"));
+    let result = format::print(&mut supplier);
     EndResult(result)
 
 }
