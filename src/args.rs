@@ -1,5 +1,6 @@
 use clap::Parser;
 
+/// A struct containing the definitions of arguments to this program.
 #[derive(Parser, Debug)]
 #[command(version, about = "Columnate lists. ")]
 pub struct Arguments {
@@ -7,6 +8,7 @@ pub struct Arguments {
     pub files: Vec<std::path::PathBuf>
 }
 
+/// Parses the arguments to this program and returns an `Arguments` instance.
 pub fn argv() -> Arguments {
     Arguments::parse()
 }

@@ -2,20 +2,29 @@ use std::io::{BufRead, stdin};
 use crate::errors::Error;
 use crate::supply::{LineSupplier, Progress};
 
+/// A struct that encapsulates all necessary data to read lines from stdin.
+/// After reading, all lines of input are stored in memory.
 pub struct StdinInput {
     lines: Vec<String>,
     index: usize
 }
 
 impl StdinInput {
+
+    /// A constructor for this struct.
+    /// # Returns
+    /// An instance of this struct.
     pub fn new() -> Self {
         Self { lines: vec![], index: 0 }
     }
+
+    /// Reads the input from stdin and stores the lines in memory.
     fn load(&mut self) {
         self.lines = stdin().lock().lines()
             .map(|line| line.unwrap())
             .collect();
     }
+
 }
 
 impl LineSupplier for StdinInput {
