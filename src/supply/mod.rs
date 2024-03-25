@@ -1,16 +1,39 @@
-pub mod stdin;
-pub mod file;
+mod stdin;
+mod file;
 
+use std::path::PathBuf;
 use lazy_static::lazy_static;
 use regex::Regex;
 use crate::errors::Error;
-pub use crate::supply::stdin::StdinInput;
-pub use crate::supply::file::FileInput;
+use crate::supply::stdin::StdinInput;
+use crate::supply::file::FileInput;
 
 lazy_static! {
     /// Regular expression that matches ANSI color sequences.
     static ref UNPRINTABLE_REGEX: Regex = Regex::new(r"\p{Cc}\[[0-9;]*[mK]").unwrap();
 }
+
+/// A collection of values indicating the source of the supplier.
+pub enum Source {
+    /// Standard input.
+    Stdin,
+    /// Input files.
+    Files(Vec<PathBuf>)
+}
+
+/// Creates a new `LineSupplier` instance.
+/// # Arguments
+/// - source: a `Source` value.
+/// # Returns
+/// A new, boxed `LineSupplier` instance corresponding to `source`.
+pub fn new(source: Source) -> Box<dyn LineSupplier> {
+    match source {
+        Source::Stdin => Box::new(StdinInput::new()),
+        Source::Files(paths) => Box::new(FileInput::new(paths))
+    }
+}
+
+
 
 /// A struct that encapsulates the contents of a line and its clean version.
 #[derive(Debug, PartialEq)]
@@ -31,6 +54,8 @@ impl<'a> Line<'a> {
         Line { line, clean_line: UNPRINTABLE_REGEX.replace_all(line, "").into_owned() }
     }
 }
+
+
 
 /// A collection of values to track progress of reading input.
 #[derive(Debug, PartialEq)]
@@ -54,21 +79,6 @@ pub trait LineSupplier {
     /// Resets the state of the supplier.
     /// After this call, supplier will be able to provide the input contents again.
     fn reset(&mut self);
-
-    /// Performs an action on each line of input.
-    /// # Arguments
-    /// - operation: a closure accepting a string slice (`&str`) and returning void.
-    /// # Returns
-    /// A `Result`; when successful, void; otherwise an error.
-    fn for_each(&mut self, operation: fn(&str) -> ()) -> Result<(), Error> {
-        loop {
-            match self.get_line()? {
-                Progress::Line(line) => operation(line.line.trim_end()),
-                Progress::Continue => continue,
-                Progress::Done => return Ok(())
-            }
-        }
-    }
 
 }
 
