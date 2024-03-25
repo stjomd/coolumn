@@ -4,6 +4,7 @@ mod errors;
 mod printer;
 
 use crate::errors::EndResult;
+use crate::printer::Printer;
 use crate::supply::{LineSupplier, FileInput, StdinInput};
 
 fn main() -> EndResult {
@@ -17,7 +18,7 @@ fn main() -> EndResult {
         supplier = Box::new(StdinInput::new());
     }
 
-    let result = printer::print(&mut supplier);
+    let result = printer::print(&mut supplier, Printer::MacOsLs);
     EndResult(result)
 
 }
