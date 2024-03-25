@@ -1,7 +1,7 @@
 mod args;
 mod supply;
 mod errors;
-mod format;
+mod printer;
 
 use crate::errors::EndResult;
 use crate::supply::{LineSupplier, FileInput, StdinInput};
@@ -17,7 +17,7 @@ fn main() -> EndResult {
         supplier = Box::new(StdinInput::new());
     }
 
-    let result = format::print(&mut supplier);
+    let result = printer::print(&mut supplier);
     EndResult(result)
 
 }
