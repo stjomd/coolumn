@@ -59,11 +59,11 @@ mod tests {
         return supplier;
     }
 
-    fn assert_case(expected_case: Progress, progress: Progress) -> () {
+    fn assert_case(expected_case: Progress, progress: Progress) {
         assert_eq!(expected_case, progress, "Case does not match")
     }
 
-    fn assert_line(expected_line: &str, progress: Progress) -> () {
+    fn assert_line(expected_line: &str, progress: Progress) {
         match progress {
             Line(line) => assert_eq!(expected_line, line.line, "Line does not match input"),
             case => panic!("Expected Progress::Line, got {:?}", case)
