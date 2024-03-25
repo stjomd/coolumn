@@ -1,29 +1,48 @@
 pub mod stdin;
 pub mod file;
 
+use lazy_static::lazy_static;
+use regex::Regex;
 use crate::errors::Error;
 pub use crate::supply::stdin::StdinInput;
 pub use crate::supply::file::FileInput;
+
+lazy_static! {
+    /// Regular expression that matches ANSI color sequences.
+    static ref UNPRINTABLE_REGEX: Regex = Regex::new(r"\p{Cc}\[[0-9;]*[mK]").unwrap();
+}
+
+/// A struct that encapsulates the contents of a line and its clean version.
+#[derive(Debug, PartialEq)]
+pub struct Line<'a> {
+    /// The line read from input.
+    pub line: &'a str,
+    /// The line with unprintable characters removed.
+    pub clean_line: String
+}
+
+impl<'a> Line<'a> {
+    /// Constructs a new instance of this struct.
+    /// # Arguments
+    /// - line: a string slice.
+    /// # Returns
+    /// An instance of this struct that stores the passed in string slice.
+    pub fn new(line: &'a str) -> Self {
+        Line { line, clean_line: UNPRINTABLE_REGEX.replace_all(line, "").into_owned() }
+    }
+}
 
 /// A collection of values to track progress of reading input.
 #[derive(Debug, PartialEq)]
 pub enum Progress<'a> {
     /// Indicates that a read was successful and contains the contents of a line.
-    Line(&'a str),
+    Line(Line<'a>),
     /// Indicates that nothing was read (for example, EOF was reached), but valid lines might appear
     /// next.
     Continue,
     /// Indicates that all content has been read already.
     Done
 }
-
-// /// A collection of values to track progress of reading input.
-// pub enum ProgressOwn {
-//     /// Indicates that a read was successful and contains the contents of a line.
-//     Line(String),
-//     /// Indicates that all content has been read already.
-//     Done
-// }
 
 pub trait LineSupplier {
 
@@ -36,22 +55,6 @@ pub trait LineSupplier {
     /// After this call, supplier will be able to provide the input contents again.
     fn reset(&mut self);
 
-    // /// Returns a line of input as an owned string.
-    // /// This method utilizes `LineSupplier::get_line` and converts string slices to owned strings.
-    // /// This allows to exclude the EOF case from the set of return values, but comes at a cost of
-    // /// creating owned strings.
-    // /// # Returns
-    // /// A result containing either a `ProgressOwn` value or an `Error`.
-    // fn get_line_owned(&mut self) -> Result<ProgressOwn, Error> {
-    //     loop {
-    //         match self.get_line()? {
-    //             Progress::Line(line) => return Ok(ProgressOwn::Line(line.to_string())),
-    //             Progress::EOF => continue,
-    //             Progress::Done => return Ok(ProgressOwn::Done)
-    //         }
-    //     }
-    // }
-
     /// Performs an action on each line of input.
     /// # Arguments
     /// - operation: a closure accepting a string slice (`&str`) and returning void.
@@ -60,7 +63,7 @@ pub trait LineSupplier {
     fn for_each(&mut self, operation: fn(&str) -> ()) -> Result<(), Error> {
         loop {
             match self.get_line()? {
-                Progress::Line(line) => operation(line.trim_end()),
+                Progress::Line(line) => operation(line.line.trim_end()),
                 Progress::Continue => continue,
                 Progress::Done => return Ok(())
             }

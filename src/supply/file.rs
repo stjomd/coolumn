@@ -66,7 +66,7 @@ impl LineSupplier for FileInput {
             self.line.clear();
             return match reader.read_line(&mut self.line) {
                 Ok(0) => { self.open_next_file()?; Ok(Continue) },
-                Ok(_) => Ok(Line(&self.line)),
+                Ok(_) => Ok(Line(crate::supply::Line::new(&self.line))),
                 Err(error) => Err(Error::IO(self.paths[self.counter].display().to_string(), error))
             };
         }

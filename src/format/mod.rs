@@ -1,58 +1,41 @@
-use std::borrow::Cow;
 use std::cmp::max;
-use lazy_static::lazy_static;
-use regex::Regex;
 use crate::errors::Error;
-use crate::supply::{LineSupplier, Progress};
+use crate::supply::{Line, LineSupplier, Progress};
 
-lazy_static! {
-    static ref UNPRINTABLE_REGEX: Regex = Regex::new(r"\p{Cc}\[[0-9;]*[mK]").unwrap();
-}
-
-fn get_printable_slice(string: &str) -> String {
-    return match UNPRINTABLE_REGEX.replace_all(string, "") {
-        Cow::Borrowed(str) => str.to_string(),
-        Cow::Owned(str) => str,
-    }
-}
-
-pub fn get_max_length(supplier: &mut Box<dyn LineSupplier>) -> Result<u32, Error> {
-    let mut maxx: u32 = 0;
+fn get_max_length(supplier: &mut Box<dyn LineSupplier>) -> Result<usize, Error> {
+    let mut max_length: usize = 0;
     loop {
         match supplier.get_line()? {
             Progress::Line(line) => {
-                maxx = max(maxx, get_printable_slice(line).len() as u32);
+                max_length = max(max_length, line.clean_line.len());
             },
             Progress::Continue => continue,
-            Progress::Done => return Ok(maxx)
-        }
-    }
-}
-
-fn get_item(supplier: &mut Box<dyn LineSupplier>) -> Result<Option<String>, Error> {
-    loop {
-        match supplier.get_line()? {
-            Progress::Line(line) => return Ok(Some(line.to_string())),
-            Progress::Continue => continue,
-            Progress::Done => return Ok(None),
+            Progress::Done => return Ok(max_length)
         }
     }
 }
 
 pub fn print(supplier: &mut Box<dyn LineSupplier>) -> Result<(), Error> {
-    let max_length = get_max_length(supplier)?;
-    let terminal_columns = termsize::get().unwrap().cols as u32;
-    let columns = terminal_columns / (max_length + 1);
-    let mut counter = 0;
+    let max_item_length = get_max_length(supplier)?;
+    let terminal_columns = termsize::get().unwrap().cols as usize;
+    let columns = terminal_columns / (max_item_length + 1);
+    // Start reading from the beginning & print items
     supplier.reset();
+    let mut counter = 0;
     loop {
-        let item = get_item(supplier)?;
+        // Get the next item to print
+        let item: Option<Line>;
+        loop {
+            match supplier.get_line()? {
+                Progress::Line(line) => { item = Some(line); break },
+                Progress::Continue => { continue },
+                Progress::Done => { item = None; break },
+            }
+        };
+        // Print with padding
         if let Some(item) = item {
-            let trimmed = item.trim_end();
-            let printable_len = get_printable_slice(&trimmed).len();
-            let pad = (max_length as usize) - printable_len;
-            let diff = item.len() - printable_len;
-            print!("{: <width$} ", trimmed, width = printable_len + pad + diff);
+            let width = max_item_length + item.line.len() - item.clean_line.len();
+            print!("{: <width$} ", item.line.trim_end(), width = width);
             counter += 1;
             if counter % columns == 0 {
                 print!("\n");

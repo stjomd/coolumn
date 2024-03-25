@@ -1,6 +1,6 @@
 use std::io::{BufRead, stdin};
 use crate::errors::Error;
-use crate::supply::{LineSupplier, Progress};
+use crate::supply::{Line, LineSupplier, Progress};
 
 /// A struct that encapsulates all necessary data to read lines from stdin.
 /// After reading, all lines of input are stored in memory.
@@ -37,7 +37,7 @@ impl LineSupplier for StdinInput {
         }
         self.index += 1;
         match self.lines.get(self.index - 1) {
-            Some(line) => Ok(Progress::Line(line)),
+            Some(line) => Ok(Progress::Line(Line::new(line))),
             None => Ok(Progress::Done)
         }
     }
@@ -59,6 +59,17 @@ mod tests {
         return supplier;
     }
 
+    fn assert_case(expected_case: Progress, progress: Progress) -> () {
+        assert_eq!(expected_case, progress, "Case does not match")
+    }
+
+    fn assert_line(expected_line: &str, progress: Progress) -> () {
+        match progress {
+            Line(line) => assert_eq!(expected_line, line.line, "Line does not match input"),
+            case => panic!("Expected Progress::Line, got {:?}", case)
+        }
+    }
+
     #[test]
     fn should_return_line_and_done() -> Result<(), Error> {
         let lines = vec![
@@ -67,10 +78,10 @@ mod tests {
             String::from("line 3"),
         ];
         let mut supplier = mock(lines.clone());
-        assert_eq!(Line(&lines[0]), supplier.get_line()?, "Result of get_line does not match input");
-        assert_eq!(Line(&lines[1]), supplier.get_line()?, "Result of get_line does not match input");
-        assert_eq!(Line(&lines[2]), supplier.get_line()?, "Result of get_line does not match input");
-        assert_eq!(Done, supplier.get_line()?, "Result of get_line is not `Done`");
+        assert_line(&lines[0], supplier.get_line()?);
+        assert_line(&lines[1], supplier.get_line()?);
+        assert_line(&lines[2], supplier.get_line()?);
+        assert_case(Done, supplier.get_line()?);
         Ok(())
     }
 
@@ -81,15 +92,15 @@ mod tests {
             String::from("line 2"),
         ];
         let mut supplier = mock(lines.clone());
-        assert_eq!(Line(&lines[0]), supplier.get_line()?, "Result of get_line does not match input");
+        assert_line(&lines[0], supplier.get_line()?);
         supplier.reset();
-        assert_eq!(Line(&lines[0]), supplier.get_line()?, "Result of get_line after reset is not the first line");
-        assert_eq!(Line(&lines[1]), supplier.get_line()?, "Result of get_line does not match input");
-        assert_eq!(Done, supplier.get_line()?, "Result of get_line is not `Done`");
+        assert_line(&lines[0], supplier.get_line()?);
+        assert_line(&lines[1], supplier.get_line()?);
+        assert_case(Done, supplier.get_line()?);
         supplier.reset();
-        assert_eq!(Line(&lines[0]), supplier.get_line()?, "Result of get_line after reset is not the first line");
-        assert_eq!(Line(&lines[1]), supplier.get_line()?, "Result of get_line does not match input");
-        assert_eq!(Done, supplier.get_line()?, "Result of get_line is not `Done`");
+        assert_line(&lines[0], supplier.get_line()?);
+        assert_line(&lines[1], supplier.get_line()?);
+        assert_case(Done, supplier.get_line()?);
         Ok(())
     }
 }
